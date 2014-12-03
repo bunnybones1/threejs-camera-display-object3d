@@ -1,0 +1,29 @@
+{
+  "name": "threejs-camera-display-object3d",
+  "main": "index.js",
+  "version": "0.0.0",
+  "homepage": "https://github.com/bunnybones1/threejs-camera-display-object3d",
+  "authors": [
+    "Tomasz Dysinski <oz@bunnybones.com>"
+  ],
+  "description": "A mesh object that shows a live preview of a camera.",
+  "moduleType": [
+    "node"
+  ],
+  "keywords": [
+    "threejs",
+    "camera",
+    "preview"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "devDependencies": {
+    "three.js": "*"
+  }
+}
