@@ -42,33 +42,35 @@ var onReady = function() {
 	}, 2000);
 
 	//test multiple create/destroys
-	var tempCamView;
+	var tempMonitorPlane;
 	var tempCamera = new THREE.PerspectiveCamera();
-	var lookTarget = new THREE.Vector3();
+	var tempCameraLookTarget = new THREE.Vector3(0, 1, 0);
+	var tempMonitorPlaneLookTarget = new THREE.Vector3();
 	testScene.scene.add(tempCamera);
 	setInterval(function() {
-		if(tempCamView) {
-			view.renderManager.onEnterFrame.remove(tempCamView.render);
-			tempCamView.destroy();
+		if(tempMonitorPlane) {
+			view.renderManager.onEnterFrame.remove(tempMonitorPlane.render);
+			tempMonitorPlane.destroy();
 		}
 		tempCamera.position.set(
 			(Math.random() - .5) * 8,
 			3,
 			(Math.random() - .5) * 8
 		);
-		tempCamView = new CameraDisplayObject({
+		tempMonitorPlane = new CameraDisplayObject({
 			camera: tempCamera,
 			renderer: view.renderer,
 			width: 4,
-			height: 2,
+			height: 3 * Math.random() + 1,
 			resolutionWidth: 400,
 			resolutionHeight: 200
 		});
-		tempCamView.position.copy(tempCamera.position);
-		testScene.scene.add(tempCamView);
-		lookTarget.setFromMatrixPosition(testScene.camera.matrixWorld);
-		tempCamView.lookAt(lookTarget);
-		view.renderManager.onEnterFrame.add(tempCamView.render);
+		tempMonitorPlane.position.copy(tempCamera.position);
+		testScene.scene.add(tempMonitorPlane);
+		tempMonitorPlaneLookTarget.setFromMatrixPosition(testScene.camera.matrixWorld);
+		tempMonitorPlane.lookAt(tempMonitorPlaneLookTarget);
+		tempCamera.lookAt(tempCameraLookTarget);
+		view.renderManager.onEnterFrame.add(tempMonitorPlane.render);
 	}, 1000)
 
 	testScene.bindRenderer(view.renderer);
