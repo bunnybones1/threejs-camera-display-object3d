@@ -12,7 +12,7 @@ var onReady = function() {
 	});
 
 	//primary test view
-	var camView = new CameraDisplayObject({
+	var cameraMonitor = new CameraDisplayObject({
 		renderer: view.renderer,
 		camera: testScene.camera,
 		width: 4,
@@ -24,21 +24,21 @@ var onReady = function() {
 			this.visible = true;
 		}
 	});
-	camView.position.y = 2;
+	cameraMonitor.position.y = 2;
 	view.renderManager.onEnterFrame.add(function() {
-		camView.render();
+		cameraMonitor.render();
 	})
 
-	testScene.scene.add(camView);
+	testScene.scene.add(cameraMonitor);
 
 	//test resize
 	setTimeout(function() {
-		camView.setSize(4, 2);
+		cameraMonitor.setSize(4, 2);
 	}, 1000);
 
 	//test resolution changes
 	setTimeout(function() {
-		camView.setResolution(400, 200);
+		cameraMonitor.setResolution(400, 200);
 	}, 2000);
 
 	//test multiple create/destroys
