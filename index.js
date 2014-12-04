@@ -47,13 +47,13 @@ CameraDisplayObject3D.prototype = Object.create(THREE.Mesh.prototype);
 
 _.assign(CameraDisplayObject3D.prototype, {
 	prerender: function() {
+		// console.log('prerender');
 		this.backupAspect = this.camera.aspect;
 		this.camera.aspect = this.width / this.height;
 		this.camera.updateProjectionMatrix();
-		console.log('prerender');
 	},
 	postrender: function() {
-		console.log('postrender');
+		// console.log('postrender');
 		this.camera.aspect = this.backupAspect;
 		this.camera.updateProjectionMatrix();
 	},
