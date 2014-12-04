@@ -9,7 +9,8 @@ function CameraDisplayObject3D(params) {
 		resolutionHeight: 100,
 		prescale: 1,
 		geometry: standardGeometry,
-		renderTargetOptions: undefined
+		renderTargetOptions: undefined,
+		generateMipmaps: false
 	}, params || {});
 	_.assign(this, params);
 
@@ -29,6 +30,7 @@ function CameraDisplayObject3D(params) {
 
 	//material
 	this.renderTarget = new THREE.WebGLRenderTarget(this.resolutionWidth, this.resolutionHeight, this.renderTargetOptions);
+	this.renderTarget.generateMipmaps = this.generateMipmaps;
 	if(!this.material) this.material = new THREE.MeshBasicMaterial({
 	});
 	this.material.map = this.renderTarget;
@@ -74,6 +76,7 @@ _.assign(CameraDisplayObject3D.prototype, {
 		this.resolutionHeight = height;
 		this.renderTarget.dispose();
 		this.renderTarget = new THREE.WebGLRenderTarget(this.resolutionWidth, this.resolutionHeight, this.renderTargetOptions);
+		this.renderTarget.generateMipmaps = generateMipmaps;
 		this.material.map = this.renderTarget;
 	},
 	destroy: function() {
