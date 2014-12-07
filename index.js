@@ -29,20 +29,18 @@ function CameraDisplayObject3D(params) {
 	var scaleToSize = !!this.geometry;
 
 	//material
-	this.renderTarget = new THREE.WebGLRenderTarget(this.resolutionWidth, this.resolutionHeight, this.renderTargetOptions);
-	this.renderTarget.generateMipmaps = this.generateMipmaps;
 	if(!this.material) this.material = new THREE.MeshBasicMaterial({
 	});
-	this.material.map = this.renderTarget;
 
+	THREE.Mesh.call(this, this.geometry, this.material);
+	this.setResolution(this.resolutionWidth, this.resolutionHeight);
+	this.setSize(this.width, this.height);
+	
 	//bind the following functions to this because they might be called from other scopes 
 	var _this = this;
 	['render', 'prerender', 'postrender'].forEach(function(funcName) {
 		_this[funcName] = _this[funcName].bind(_this);
 	});
-	THREE.Mesh.call(this, this.geometry, this.material);
-	this.scale.x = this.prescale * this.width;
-	this.scale.y = this.prescale * this.height;
 }
 
 CameraDisplayObject3D.prototype = Object.create(THREE.Mesh.prototype);
@@ -72,11 +70,11 @@ _.assign(CameraDisplayObject3D.prototype, {
 		this.scale.y = this.height * this.prescale;
 	},
 	setResolution: function(width, height) {
+		if(this.renderTarget) this.renderTarget.dispose();
 		this.resolutionWidth = width;
 		this.resolutionHeight = height;
-		this.renderTarget.dispose();
 		this.renderTarget = new THREE.WebGLRenderTarget(this.resolutionWidth, this.resolutionHeight, this.renderTargetOptions);
-		this.renderTarget.generateMipmaps = generateMipmaps;
+		this.renderTarget.generateMipmaps = this.generateMipmaps;
 		this.material.map = this.renderTarget;
 	},
 	destroy: function() {
