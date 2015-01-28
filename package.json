@@ -1,6 +1,6 @@
 {
   "name": "threejs-camera-display-object3d",
-  "version": "1.0.5",
+  "version": "2.0.0",
   "description": "A mesh object that shows a live preview of a camera.",
   "main": "index.js",
   "license": "MIT",
