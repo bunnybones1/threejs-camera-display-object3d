@@ -2,7 +2,7 @@ var _ = require('lodash');
 
 var standardGeometry = new THREE.PlaneGeometry(1, 1, 1, 1);
 function CameraDisplayObject3D(params) {
-	params = _.merge({
+	_.assign(this, _.extend({
 		width: window.innerWidth,
 		height: window.innerHeight,
 		resolutionWidth: 100,
@@ -11,19 +11,25 @@ function CameraDisplayObject3D(params) {
 		geometry: standardGeometry,
 		renderTargetOptions: undefined,
 		generateMipmaps: false
-	}, params || {});
-	_.assign(this, params);
+	}, params));
 
 	//needs a camera
 	if(!this.camera) throw new Error("You must provide a camera.");
+	if(!this.scene) throw new Error("You must provide a scene or scenes.");
 
 	//find the scene
-	this.scene = this.camera;
-	while(this.scene.parent) {
-		this.scene = this.scene.parent;
+	if(!this.scene) {
+		var scene = this.camera;
+		while(scene.parent) {
+			scene = scene.parent;
+		}
+		if(!(scene instanceof THREE.Scene)) this.scene = undefined;
+		else this.scene = scene;
+		if(!this.scene) throw new Error("Your camera must be a child of a scene.");
 	}
-	if(!(this.scene instanceof THREE.Scene)) this.scene = undefined;
-	if(!this.scene) throw new Error("Your camera must be a child of a scene.");
+
+	if(this.scene instanceof THREE.Scene) this.render = this.renderOneScene;
+	if(this.scene instanceof Array) this.render = this.renderManyScenes;
 
 	//if its default geometry, width and height should scale
 	var scaleToSize = !!this.geometry;
@@ -57,9 +63,19 @@ _.assign(CameraDisplayObject3D.prototype, {
 		this.camera.aspect = this.backupAspect;
 		this.camera.updateProjectionMatrix();
 	},
-	render: function() {
+	renderOneScene: function() {
 		this.prerender();
 		this.renderer.render(this.scene, this.camera, this.renderTarget);
+		this.postrender();
+	},
+	renderManyScenes: function() {
+		this.prerender();
+		this.renderer.render(this.scene[0], this.camera, this.renderTarget);
+		this.renderer.autoClear = false;
+		for (var i = 1; i < this.scene.length; i++) {
+			this.renderer.render(this.scene[i], this.camera, this.renderTarget);
+		};
+		this.renderer.autoClear = true;
 		this.postrender();
 	},
 	setSize: function(width, height) {
