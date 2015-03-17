@@ -8,7 +8,8 @@ var onReady = function() {
 	var view = new View({
 		scene: testScene.scene,
 		camera: testScene.camera,
-		stats: true
+		stats: true,
+		useRafPolyfill: false
 	});
 
 	//primary test view
@@ -17,6 +18,7 @@ var onReady = function() {
 		camera: testScene.camera,
 		width: 4,
 		height: 4,
+		scene: testScene.scene,
 		prerender: function() {
 			this.visible = false;
 		},
@@ -26,7 +28,7 @@ var onReady = function() {
 	});
 	cameraMonitor.position.y = 2;
 	view.renderManager.onEnterFrame.add(function() {
-		cameraMonitor.render();
+		cameraMonitor.update();
 	})
 
 	testScene.scene.add(cameraMonitor);
@@ -49,7 +51,7 @@ var onReady = function() {
 	testScene.scene.add(tempCamera);
 	setInterval(function() {
 		if(tempMonitorPlane) {
-			view.renderManager.onEnterFrame.remove(tempMonitorPlane.render);
+			view.renderManager.onEnterFrame.remove(tempMonitorPlane.update);
 			tempMonitorPlane.destroy();
 		}
 		tempCamera.position.set(
@@ -59,6 +61,7 @@ var onReady = function() {
 		);
 		tempMonitorPlane = new CameraDisplayObject({
 			camera: tempCamera,
+			scene: testScene.scene,
 			renderer: view.renderer,
 			width: 4,
 			height: 3 * Math.random() + 1,
@@ -70,7 +73,7 @@ var onReady = function() {
 		tempMonitorPlaneLookTarget.setFromMatrixPosition(testScene.camera.matrixWorld);
 		tempMonitorPlane.lookAt(tempMonitorPlaneLookTarget);
 		tempCamera.lookAt(tempCameraLookTarget);
-		view.renderManager.onEnterFrame.add(tempMonitorPlane.render);
+		view.renderManager.onEnterFrame.add(tempMonitorPlane.update);
 	}, 1000)
 
 	testScene.bindRenderer(view.renderer);

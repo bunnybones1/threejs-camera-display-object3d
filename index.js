@@ -1,104 +1,115 @@
-var _ = require('lodash');
-
 var standardGeometry = new THREE.PlaneGeometry(1, 1, 1, 1);
-function CameraDisplayObject3D(params) {
-	_.assign(this, _.extend({
-		width: window.innerWidth,
-		height: window.innerHeight,
-		resolutionWidth: 100,
-		resolutionHeight: 100,
-		prescale: 1,
-		geometry: standardGeometry,
-		renderTargetOptions: undefined,
-		generateMipmaps: false
-	}, params));
+function CameraDisplayObject3D(options) {
+	var _width = options.width || window.innerWidth;
+	var _height = options.height || window.innerHeight;
+	var _resolutionWidth = options.resolutionWidth || 100;
+	var _resolutionHeight = options.resolutionHeight || 100;
+	var _prescale = options.prescale || 1;
+	var _geometry = options.geometry || standardGeometry;
+	var _renderTargetOptions = options.renderTargetOptions;
+	var _generateMipmaps = options.generateMipmaps || false;
+	var _material = options.material || new THREE.MeshBasicMaterial({
+		// side: THREE.DoubleSide,
+		// color: 0xff0000
+	});
+	var _maintainAspect = options.maintainAspect !== undefined ? options.maintainAspect : true;
 
-	//needs a camera
-	if(!this.camera) throw new Error("You must provide a camera.");
-	if(!this.scene) throw new Error("You must provide a scene or scenes.");
+	var _renderer = options.renderer;
+	_setCamera(options.camera);
+	_setScene.call(this, options.scene);
 
-	//find the scene
-	if(!this.scene) {
-		var scene = this.camera;
-		while(scene.parent) {
-			scene = scene.parent;
-		}
-		if(!(scene instanceof THREE.Scene)) this.scene = undefined;
-		else this.scene = scene;
-		if(!this.scene) throw new Error("Your camera must be a child of a scene.");
+	var _render,
+		_camera,
+		_scene,
+		_renderTarget,
+		_backupAspect;
+
+	THREE.Mesh.call(this, _geometry, _material);
+	_setResolution(_resolutionWidth, _resolutionHeight);
+	_setSize.call(this, _width, _height);
+
+	function _update() {
+		_prerender();
+		_render();
+		_postrender();
 	}
 
-	if(this.scene instanceof THREE.Scene) this.render = this.renderOneScene;
-	if(this.scene instanceof Array) this.render = this.renderManyScenes;
+	function _updateRaw() {
+		_render();
+	}
 
-	//if its default geometry, width and height should scale
-	var scaleToSize = !!this.geometry;
+	function _prerender() {
+		_backupAspect = _camera.aspect;
+		_camera.aspect = _width / _height;
+		_camera.updateProjectionMatrix();
+	}
 
-	//material
-	if(!this.material) this.material = new THREE.MeshBasicMaterial({
-	});
+	function _postrender() {
+		_camera.aspect = _backupAspect;
+		_camera.updateProjectionMatrix();
+	}
 
-	THREE.Mesh.call(this, this.geometry, this.material);
-	this.setResolution(this.resolutionWidth, this.resolutionHeight);
-	this.setSize(this.width, this.height);
-	
-	//bind the following functions to this because they might be called from other scopes 
-	var _this = this;
-	['render', 'prerender', 'postrender'].forEach(function(funcName) {
-		_this[funcName] = _this[funcName].bind(_this);
-	});
+	function _renderOneScene() {
+		_renderer.render(_scene, _camera, _renderTarget);
+	}
+
+	function _renderManyScenes() {
+		_renderer.render(_scene[0], _camera, _renderTarget);
+		_renderer.autoClear = false;
+		for (var i = 1; i < _scene.length; i++) {
+			_renderer.render(_scene[i], _camera, _renderTarget);
+		}
+		_renderer.autoClear = true;
+	}
+
+	function _setSize(width, height) {
+		_width = width;
+		_height = height;
+		this.scale.x = _width * _prescale;
+		this.scale.y = _height * _prescale;
+	}
+
+	function _setResolution(width, height) {
+		if(_renderTarget) _renderTarget.dispose();
+		_resolutionWidth = width;
+		_resolutionHeight = height;
+		_renderTarget = new THREE.WebGLRenderTarget(_resolutionWidth, _resolutionHeight, _renderTargetOptions);
+		_renderTarget.generateMipmaps = _generateMipmaps;
+		_material.map = _renderTarget;
+	}
+
+	function _setScene(scene) {
+		_scene = scene;
+		if(scene instanceof THREE.Scene) {
+			_render = _renderOneScene;
+		} else if(scene instanceof Array) {
+			_render = _renderManyScenes;
+		}
+	}
+
+	function _setCamera(camera) {
+		_camera = camera;
+	}
+
+	function _destroy() {
+		if(this.parent) this.parent.remove(this);
+		_renderTarget.dispose();
+		_renderer = null;
+		_material.dispose();
+		_material = null;
+		_camera = null;
+		_scene = null;
+	}
+
+	//public
+	this.update = _maintainAspect ? _update : _updateRaw;
+	this.setSize = _setSize;
+	this.setResolution = _setResolution;
+	this.setScene = _setScene;
+	this.setCamera = _setCamera;
+	this.destroy = _destroy;
 }
 
 CameraDisplayObject3D.prototype = Object.create(THREE.Mesh.prototype);
 
-_.assign(CameraDisplayObject3D.prototype, {
-	prerender: function() {
-		// console.log('prerender');
-		this.backupAspect = this.camera.aspect;
-		this.camera.aspect = this.width / this.height;
-		this.camera.updateProjectionMatrix();
-	},
-	postrender: function() {
-		// console.log('postrender');
-		this.camera.aspect = this.backupAspect;
-		this.camera.updateProjectionMatrix();
-	},
-	renderOneScene: function() {
-		this.prerender();
-		this.renderer.render(this.scene, this.camera, this.renderTarget);
-		this.postrender();
-	},
-	renderManyScenes: function() {
-		this.prerender();
-		this.renderer.render(this.scene[0], this.camera, this.renderTarget);
-		this.renderer.autoClear = false;
-		for (var i = 1; i < this.scene.length; i++) {
-			this.renderer.render(this.scene[i], this.camera, this.renderTarget);
-		};
-		this.renderer.autoClear = true;
-		this.postrender();
-	},
-	setSize: function(width, height) {
-		this.camera;
-		this.width = width;
-		this.height = height;
-		this.scale.x = this.width * this.prescale;
-		this.scale.y = this.height * this.prescale;
-	},
-	setResolution: function(width, height) {
-		if(this.renderTarget) this.renderTarget.dispose();
-		this.resolutionWidth = width;
-		this.resolutionHeight = height;
-		this.renderTarget = new THREE.WebGLRenderTarget(this.resolutionWidth, this.resolutionHeight, this.renderTargetOptions);
-		this.renderTarget.generateMipmaps = this.generateMipmaps;
-		this.material.map = this.renderTarget;
-	},
-	destroy: function() {
-		if(this.parent) this.parent.remove(this);
-		this.renderTarget.dispose();
-		this.renderer = null;
-		this.material.dispose();
-		this.material = null;
-	}
-});
 module.exports = CameraDisplayObject3D;
