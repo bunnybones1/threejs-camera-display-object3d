@@ -1,6 +1,6 @@
 {
   "name": "threejs-camera-display-object3d",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "A mesh object that shows a live preview of a camera.",
   "main": "index.js",
   "license": "MIT",
@@ -9,8 +9,7 @@
     "email": "oz@bunnybones.com",
     "url": "https://github.com/bunnybones1"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "loadandrunscripts": "^1.0.0",
     "threejs-checkerroom": "^1.0.0",
