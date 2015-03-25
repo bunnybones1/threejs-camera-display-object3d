@@ -8,9 +8,11 @@ function CameraDisplayObject3D(options) {
 	var _geometry = options.geometry || standardGeometry;
 	var _renderTargetOptions = options.renderTargetOptions;
 	var _generateMipmaps = options.generateMipmaps || false;
+	var _transparent = options.transparent || false;
 	var _material = options.material || new THREE.MeshBasicMaterial({
 		// side: THREE.DoubleSide,
 		// color: 0xff0000
+		transparent: _transparent
 	});
 	var _maintainAspect = options.maintainAspect !== undefined ? options.maintainAspect : true;
 
@@ -91,6 +93,10 @@ function CameraDisplayObject3D(options) {
 		_camera = camera;
 	}
 
+	function _getCamera() {
+		return _camera;
+	}
+
 	function _destroy() {
 		if(this.parent) this.parent.remove(this);
 		_renderTarget.dispose();
@@ -107,6 +113,7 @@ function CameraDisplayObject3D(options) {
 	this.setResolution = _setResolution;
 	this.setScene = _setScene;
 	this.setCamera = _setCamera;
+	this.getCamera = _getCamera;
 	this.destroy = _destroy;
 }
 
